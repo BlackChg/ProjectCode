@@ -43,6 +43,58 @@ C++、Makefile、vim、g++、Json、mysql、http、线程、html
 主要是对html的代码编写及渲染
 1、html代码实现：html+css+js，html主要完成页面框架、css主要是对页面框架进行渲染、js主要完成页面的动态渲染
 
+## httplib工作流程
+
+httplib中主要有三个类
+
+​	httplib::Server
+
+​	httplib::Request
+
+​	httplib::Response
+
+Server类中主要有的成员是一个map类型的请求与处理的路由表`map<pair<string,string>, function> route`
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210622135147978.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NDQzOTg2,size_16,color_FFFFFF,t_70)
+
+
+该表的主要功能就是完成请求方式资源路径和对应的处理函数的映射关系，其中key是由请求方式和资源路径组成的，而val就是对应的指向处理函数的指针
+
+接口listen("0.0.0.0", 8080)主要是搭建了一个能够监听当前主机多有IP，主机号为8080的TCP服务器，
+
+
+
+当有服务端收到一个客户端的连接时，会将新建立的连接抛入到线程池中，而线程池中的线程负责与指定的客户端进行通信
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210622135206362.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NDQzOTg2,size_16,color_FFFFFF,t_70)
+
+
+**线程工作流程：**
+
+ 1. 接收请求数据，按照http请求协议格式进行解析（请求方法、资源路径、查询字符串、头部字段、正文等等...）
+
+ 2. 实例化httplib::Request对象，然后将解析得到的信息填入到该对象中
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210622135224166.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NDQzOTg2,size_16,color_FFFFFF,t_70)
+
+
+    
+
+3. 根据请求信息，在route路由表中查找针对这个请求有没有对应的处理函数，如果没有则直接返回404，表示资源不存在，如果有这个路径并且有对应的处理函数，则执行对应的处理函数，传入求情信息，并实例化一个空的httplib::Response对象，将其传入到处理函数中，然后针对用户的请求完成对应的业务处理后，将对应的响应结果信息填充到Response对象中
+
+   class Response
+   {
+       int status; //响应状态码
+       string body; //响应正文
+       map<string,string> headers;//头部信息
+   }
+
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210622135243599.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NDQzOTg2,size_16,color_FFFFFF,t_70)
+
+4. 线程执行完处理函数之后，就得到了一个填充完毕的Response对象，然后根据该对象的填充后的属性组织http响应协议格式的数据，然后回复给客户端
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210622135255107.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ0NDQzOTg2,size_16,color_FFFFFF,t_70)
+5. 最后一步是等待下一个http请求，如果有则处理，没有就关闭连接
 # 运行结果
 **index.html页面**
 主页面
