@@ -18,7 +18,7 @@ C++、Makefile、vim、g++、Json、mysql、http、线程、html
 
 **前端界面模块**：基于简单的html与css和vue.js以及ajax实现前端界面的静态展示以及动态数据获取渲染功能
 ## 代码实现概要
-代码：[点餐系统](https://github.com/BlackChg/project/tree/master/sys_order)
+
 **一 ) 业务数据管理模块**
 1、数据存储工具：mysql
 
